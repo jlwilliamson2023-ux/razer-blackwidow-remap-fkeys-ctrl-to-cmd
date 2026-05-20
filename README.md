@@ -1,5 +1,9 @@
 # Razer BlackWidow V4 → macOS Setup
 
+[![ShellCheck](https://github.com/jlwilliamson2023-ux/razer-blackwidow-remap-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/jlwilliamson2023-ux/razer-blackwidow-remap-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml)
+![macOS](https://img.shields.io/badge/macOS-13%2B-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+
 Production-grade, one-command setup that makes a **Razer BlackWidow V4** behave like a Mac keyboard:
 
 - **F1–F12 → macOS media functions** (brightness, Mission Control, volume, etc.)
@@ -78,10 +82,12 @@ Save this as `install.sh`:
 # Tested on macOS 13 Ventura and later.
 # Usage: bash install.sh
 
+# Color codes are intentionally embedded in printf format strings below.
+# shellcheck disable=SC2059
+
 set -euo pipefail
 
 # Razer USA, Ltd. vendor id — shared by ALL connection modes (dongle/BT/wired)
-RAZER_VENDOR_ID_DEC=5426     # decimal, for Karabiner + JSON
 RAZER_VENDOR_ID_HEX=0x1532   # hex, for the immediate hidutil call
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
@@ -418,6 +424,17 @@ Then add it to the identifiers array (Karabiner allows multiple), e.g.:
 
 ## Uninstall
 
+Run the bundled uninstaller — it reverses everything `install.sh` did (removes the
+LaunchAgent, clears the hidutil remap, deletes the Karabiner rule files, strips the
+two rules out of `karabiner.json`, and restores the default F-key mode):
+
+```bash
+bash uninstall.sh
+```
+
+<details>
+<summary>Or do it manually</summary>
+
 ```bash
 # Remove hidutil LaunchAgent
 launchctl unload ~/Library/LaunchAgents/com.razer.hidutil.keymap.plist
@@ -435,6 +452,8 @@ defaults delete NSGlobalDomain com.apple.keyboard.fnState
 ```
 
 Then remove the two rules from Karabiner-Elements → Complex Modifications.
+
+</details>
 
 ---
 

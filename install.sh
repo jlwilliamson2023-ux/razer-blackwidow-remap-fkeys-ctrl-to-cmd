@@ -9,10 +9,12 @@
 # Tested on macOS 13 Ventura and later.
 # Usage: bash ~/Downloads/razer_install.sh
 
+# Color codes are intentionally embedded in printf format strings below.
+# shellcheck disable=SC2059
+
 set -euo pipefail
 
 # Razer USA, Ltd. vendor id — shared by ALL connection modes (dongle/BT/wired)
-RAZER_VENDOR_ID_DEC=5426     # decimal, for Karabiner + JSON
 RAZER_VENDOR_ID_HEX=0x1532   # hex, for the immediate hidutil call
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; NC='\033[0m'
