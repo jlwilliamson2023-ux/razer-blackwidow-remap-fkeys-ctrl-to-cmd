@@ -1,15 +1,15 @@
-# Razer BlackWidow V4 → macOS Setup
+# Razer Keyboard → macOS Setup (F-keys + Ctrl→Cmd)
 
 [![ShellCheck](https://github.com/jlwilliamson2023-ux/razer-blackwidow-remap-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/jlwilliamson2023-ux/razer-blackwidow-remap-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml)
 ![macOS](https://img.shields.io/badge/macOS-13%2B-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
-Production-grade, one-command setup that makes a **Razer BlackWidow V4** behave like a Mac keyboard:
+Production-grade, one-command setup that makes **any Razer keyboard** behave like a Mac keyboard (originally built for the BlackWidow V4):
 
 - **F1–F12 → macOS media functions** (brightness, Mission Control, volume, etc.)
 - **Control → Command** remapping for a native Mac workflow
 
-Everything is **scoped to the Razer keyboard only** (USB Vendor ID `0x1532`) and works identically over **2.4GHz dongle, Bluetooth, and USB-C wired**. Your built-in MacBook keyboard is never touched.
+Everything is **scoped to Razer keyboards** by USB Vendor ID `0x1532` — which *every* Razer device shares, so it works on any model (BlackWidow, Huntsman, Ornata, etc.) — and works identically over **2.4GHz dongle, Bluetooth, and USB-C wired**. Your built-in MacBook keyboard is never touched, and **Razer Synapse is not required**.
 
 ---
 
@@ -34,7 +34,7 @@ Each connection mode (dongle / Bluetooth / wired) enumerates with a **different 
 
 - macOS 13 (Ventura) or later
 - [Karabiner-Elements](https://karabiner-elements.pqrs.org/) installed
-- A Razer BlackWidow V4 (any connection mode)
+- Any Razer keyboard (any connection mode)
 
 No Homebrew, Python, or `jq` required — the installer uses only tools built into macOS.
 
@@ -62,7 +62,7 @@ That's it — no manual rule-toggling in Karabiner. The installer:
 
 ### Using it on another Mac
 
-Any **Razer BlackWidow V4** is the same vendor ID, so the exact same `install.sh` works on any Mac with no edits. Install Karabiner, run the script, grant the permission once.
+All Razer keyboards share the same vendor ID, so the exact same `install.sh` works on any Mac and any Razer model with no edits. Install Karabiner, run the script, grant the permission once.
 
 ---
 
@@ -72,7 +72,7 @@ Save this as `install.sh`:
 
 ```bash
 #!/usr/bin/env bash
-# install.sh — Razer BlackWidow V4 macOS Setup
+# install.sh — Razer Keyboard macOS Setup (F-keys + Control→Command)
 # Fully automated: no manual Karabiner UI steps required.
 #
 # Scopes ALL remapping to the Razer keyboard via Vendor ID 0x1532 (5426),
@@ -132,9 +132,9 @@ mkdir -p "$KARABINER_DIR"
 
 cat > "$KARABINER_DIR/razer_f_keys.json" <<'JSON'
 {
-  "title": "Razer BlackWidow V4 - MacBook F-Keys",
+  "title": "Razer Keyboard - MacBook F-Keys",
   "rules": [{
-    "description": "Razer BlackWidow V4 F-Keys to MacBook Functions",
+    "description": "Razer Keyboard F-Keys to MacBook Functions",
     "manipulators": [
       {"type":"basic","from":{"key_code":"f1"}, "to":[{"key_code":"f1", "modifiers":["fn"]}],"conditions":[{"type":"device_if","identifiers":[{"vendor_id":5426}]}]},
       {"type":"basic","from":{"key_code":"f2"}, "to":[{"key_code":"f2", "modifiers":["fn"]}],"conditions":[{"type":"device_if","identifiers":[{"vendor_id":5426}]}]},
@@ -156,7 +156,7 @@ log "razer_f_keys.json written (vendor-scoped)"
 
 cat > "$KARABINER_DIR/razer_ctrl_to_cmd.json" <<'JSON'
 {
-  "title": "Razer BlackWidow V4 - Control to Command",
+  "title": "Razer Keyboard - Control to Command",
   "rules": [{
     "description": "Map Left and Right Control to Command",
     "manipulators": [
@@ -209,7 +209,7 @@ const fkey = (n) => ({ type:"basic", from:{key_code:"f"+n}, to:[{key_code:"f"+n,
 
 const newRules = [
   {
-    description: "Razer BlackWidow V4 F-Keys to MacBook Functions",
+    description: "Razer Keyboard F-Keys to MacBook Functions",
     manipulators: [1,2,3,4,5,6,7,8,9,10,11,12].map(fkey)
   },
   {
@@ -220,6 +220,14 @@ const newRules = [
     ]
   }
 ];
+
+// Descriptions this installer owns (incl. legacy names) — removed before
+// re-adding, so renames never leave duplicate rules behind.
+const managed = new Set([
+  "Razer Keyboard F-Keys to MacBook Functions",
+  "Razer BlackWidow V4 F-Keys to MacBook Functions", // legacy
+  "Map Left and Right Control to Command"
+]);
 
 const defaultProfile = {
   complex_modifications: { parameters: {}, rules: [] },
@@ -244,18 +252,13 @@ let profile = config.profiles.find(p => p.selected) || config.profiles[0];
 if (!profile.complex_modifications) profile.complex_modifications = { parameters: {}, rules: [] };
 if (!Array.isArray(profile.complex_modifications.rules)) profile.complex_modifications.rules = [];
 
-const rules = profile.complex_modifications.rules;
-let changed = 0;
-for (const nr of newRules) {
-  let found = false;
-  for (let i = 0; i < rules.length; i++) {
-    if (rules[i] && rules[i].description === nr.description) { rules[i] = nr; found = true; changed++; break; }
-  }
-  if (!found) { rules.unshift(nr); changed++; }
-}
+// Drop any managed rule (current or legacy name), then add the fresh ones on top.
+profile.complex_modifications.rules =
+  profile.complex_modifications.rules.filter(r => !(r && managed.has(r.description)));
+for (let i = newRules.length - 1; i >= 0; i--) profile.complex_modifications.rules.unshift(newRules[i]);
 
 writeText(path, JSON.stringify(config, null, 4));
-console.log(changed ? "  -> rules injected and enabled (vendor-scoped)" : "  -> rules already present");
+console.log("  -> rules injected and enabled (vendor-scoped)");
 JXA
 log "karabiner.json updated"
 
@@ -335,7 +338,7 @@ log "Karabiner-Elements launched"
 # ── Done ──────────────────────────────────────────────────────────────────────
 
 printf "\n${GREEN}══════════════════════════════════════════════════${NC}\n"
-printf "${GREEN}  Razer BlackWidow V4 — fully installed!${NC}\n"
+printf "${GREEN}  Razer keyboard — fully installed!${NC}\n"
 printf "${GREEN}══════════════════════════════════════════════════${NC}\n\n"
 printf "  Scoped to Razer (vendor 0x1532) — built-in keyboard untouched.\n"
 printf "  Works over 2.4GHz dongle, Bluetooth, and USB-C wired.\n\n"
@@ -463,4 +466,4 @@ MIT — do whatever you like.
 
 ---
 
-**Tested on:** macOS 13 Ventura+, Razer BlackWidow V4, Karabiner-Elements
+**Tested on:** macOS 13 Ventura+, Razer BlackWidow V4 (works with any Razer keyboard), Karabiner-Elements

@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
-# razer_install.sh — Razer BlackWidow V4 macOS Setup
+# install.sh — Razer Keyboard macOS Setup (F-keys + Control→Command)
 # Fully automated: no manual Karabiner UI steps required.
 #
-# Scopes ALL remapping to the Razer keyboard via Vendor ID 0x1532 (5426),
-# so it works identically over 2.4GHz dongle, Bluetooth, and USB-C wired —
-# and never touches the built-in MacBook keyboard or other devices.
+# Works with ANY Razer keyboard: scopes ALL remapping to Razer's Vendor ID
+# 0x1532 (5426) — shared by every Razer device — so it applies regardless of
+# model and works identically over 2.4GHz dongle, Bluetooth, and USB-C wired,
+# while never touching the built-in MacBook keyboard or other devices.
 #
 # Tested on macOS 13 Ventura and later.
-# Usage: bash ~/Downloads/razer_install.sh
+# Usage: bash install.sh
 
 # Color codes are intentionally embedded in printf format strings below.
 # shellcheck disable=SC2059
@@ -59,9 +60,9 @@ mkdir -p "$KARABINER_DIR"
 
 cat > "$KARABINER_DIR/razer_f_keys.json" <<'JSON'
 {
-  "title": "Razer BlackWidow V4 - MacBook F-Keys",
+  "title": "Razer Keyboard - MacBook F-Keys",
   "rules": [{
-    "description": "Razer BlackWidow V4 F-Keys to MacBook Functions",
+    "description": "Razer Keyboard F-Keys to MacBook Functions",
     "manipulators": [
       {"type":"basic","from":{"key_code":"f1"}, "to":[{"key_code":"f1", "modifiers":["fn"]}],"conditions":[{"type":"device_if","identifiers":[{"vendor_id":5426}]}]},
       {"type":"basic","from":{"key_code":"f2"}, "to":[{"key_code":"f2", "modifiers":["fn"]}],"conditions":[{"type":"device_if","identifiers":[{"vendor_id":5426}]}]},
@@ -83,7 +84,7 @@ log "razer_f_keys.json written (vendor-scoped)"
 
 cat > "$KARABINER_DIR/razer_ctrl_to_cmd.json" <<'JSON'
 {
-  "title": "Razer BlackWidow V4 - Control to Command",
+  "title": "Razer Keyboard - Control to Command",
   "rules": [{
     "description": "Map Left and Right Control to Command",
     "manipulators": [
@@ -136,7 +137,7 @@ const fkey = (n) => ({ type:"basic", from:{key_code:"f"+n}, to:[{key_code:"f"+n,
 
 const newRules = [
   {
-    description: "Razer BlackWidow V4 F-Keys to MacBook Functions",
+    description: "Razer Keyboard F-Keys to MacBook Functions",
     manipulators: [1,2,3,4,5,6,7,8,9,10,11,12].map(fkey)
   },
   {
@@ -147,6 +148,14 @@ const newRules = [
     ]
   }
 ];
+
+// Descriptions this installer owns (incl. legacy names) — removed before
+// re-adding, so renames never leave duplicate rules behind.
+const managed = new Set([
+  "Razer Keyboard F-Keys to MacBook Functions",
+  "Razer BlackWidow V4 F-Keys to MacBook Functions", // legacy
+  "Map Left and Right Control to Command"
+]);
 
 const defaultProfile = {
   complex_modifications: { parameters: {}, rules: [] },
@@ -171,18 +180,13 @@ let profile = config.profiles.find(p => p.selected) || config.profiles[0];
 if (!profile.complex_modifications) profile.complex_modifications = { parameters: {}, rules: [] };
 if (!Array.isArray(profile.complex_modifications.rules)) profile.complex_modifications.rules = [];
 
-const rules = profile.complex_modifications.rules;
-let changed = 0;
-for (const nr of newRules) {
-  let found = false;
-  for (let i = 0; i < rules.length; i++) {
-    if (rules[i] && rules[i].description === nr.description) { rules[i] = nr; found = true; changed++; break; }
-  }
-  if (!found) { rules.unshift(nr); changed++; }
-}
+// Drop any managed rule (current or legacy name), then add the fresh ones on top.
+profile.complex_modifications.rules =
+  profile.complex_modifications.rules.filter(r => !(r && managed.has(r.description)));
+for (let i = newRules.length - 1; i >= 0; i--) profile.complex_modifications.rules.unshift(newRules[i]);
 
 writeText(path, JSON.stringify(config, null, 4));
-console.log(changed ? "  -> rules injected and enabled (vendor-scoped)" : "  -> rules already present");
+console.log("  -> rules injected and enabled (vendor-scoped)");
 JXA
 log "karabiner.json updated"
 
@@ -262,7 +266,7 @@ log "Karabiner-Elements launched"
 # ── Done ──────────────────────────────────────────────────────────────────────
 
 printf "\n${GREEN}══════════════════════════════════════════════════${NC}\n"
-printf "${GREEN}  Razer BlackWidow V4 — fully installed!${NC}\n"
+printf "${GREEN}  Razer keyboard — fully installed!${NC}\n"
 printf "${GREEN}══════════════════════════════════════════════════${NC}\n\n"
 printf "  Scoped to Razer (vendor 0x1532) — built-in keyboard untouched.\n"
 printf "  Works over 2.4GHz dongle, Bluetooth, and USB-C wired.\n\n"

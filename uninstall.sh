@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# uninstall.sh — Razer BlackWidow V4 macOS Setup (full removal)
+# uninstall.sh — Razer Keyboard macOS Setup (full removal)
 #
 # Reverses everything install.sh did:
 #   - removes + unloads the hidutil LaunchAgent and clears the Razer remap
@@ -67,7 +67,8 @@ function writeText(p,t){ return $(t).writeToFileAtomicallyEncodingError($(p),tru
 const HOME = ObjC.unwrap($.NSProcessInfo.processInfo.environment.objectForKey('HOME'));
 const path = HOME + '/.config/karabiner/karabiner.json';
 const targets = new Set([
-  "Razer BlackWidow V4 F-Keys to MacBook Functions",
+  "Razer Keyboard F-Keys to MacBook Functions",
+  "Razer BlackWidow V4 F-Keys to MacBook Functions", // legacy name
   "Map Left and Right Control to Command"
 ]);
 
