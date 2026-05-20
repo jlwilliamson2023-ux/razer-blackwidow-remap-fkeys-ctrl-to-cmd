@@ -1,6 +1,6 @@
 # Razer Keyboard → macOS Setup (F-keys + Ctrl→Cmd)
 
-[![ShellCheck](https://github.com/jlwilliamson2023-ux/razer-blackwidow-remap-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/jlwilliamson2023-ux/razer-blackwidow-remap-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml)
+[![ShellCheck](https://github.com/jlwilliamson2023-ux/razer-keyboard-macos-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/jlwilliamson2023-ux/razer-keyboard-macos-fkeys-ctrl-to-cmd/actions/workflows/shellcheck.yml)
 ![macOS](https://img.shields.io/badge/macOS-13%2B-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
@@ -9,7 +9,28 @@ Production-grade, one-command setup that makes **any Razer keyboard** behave lik
 - **F1–F12 → macOS media functions** (brightness, Mission Control, volume, etc.)
 - **Control → Command** remapping for a native Mac workflow
 
-Everything is **scoped to Razer keyboards** by USB Vendor ID `0x1532` — which *every* Razer device shares, so it works on any model (BlackWidow, Huntsman, Ornata, etc.) — and works identically over **2.4GHz dongle, Bluetooth, and USB-C wired**. Your built-in MacBook keyboard is never touched, and **Razer Synapse is not required**.
+Everything is **scoped to Razer keyboards** by USB Vendor ID `0x1532` — which *every* Razer device shares, so it works on any model (BlackWidow, Huntsman, Ornata, etc.) — and works identically over **2.4GHz dongle, Bluetooth, and USB-C wired**. Your built-in MacBook keyboard is never touched.
+
+---
+
+## What it does
+
+When you plug a Razer keyboard into a Mac, two things feel "off" coming from a PC layout:
+
+1. **The F-row types F1–F12** instead of doing brightness / volume / Mission Control like a Mac keyboard.
+2. **Control is where your thumb expects Command**, so all the muscle-memory shortcuts (copy, paste, save, quit…) land on the wrong key.
+
+This setup fixes both, automatically and permanently:
+
+- **F1–F12 act as the macOS media keys** — brightness, Mission Control, Launchpad, keyboard light, playback, volume, mute — exactly like a built-in Mac keyboard. (Hold `fn` to get a real F-key when an app needs one.)
+- **Left & Right Control behave as Command** — so `Ctrl+C / V / Z / S / Q` work as `Cmd+C / V / Z / S / Q`, the Mac way.
+- **Only your Razer keyboard is affected.** Matching is by Razer's vendor ID, so your MacBook's built-in keyboard and any non-Razer keyboard are left exactly as they are.
+- **Works on every connection mode** — 2.4GHz dongle, Bluetooth, and USB-C wired — with no reconfiguring when you switch.
+- **Survives reboots and logins** automatically (no need to re-run anything).
+
+### Razer Synapse is **not** required
+
+This works entirely through macOS itself (the built-in `hidutil` driver remap) plus [Karabiner-Elements](https://karabiner-elements.pqrs.org/). You do **not** need Razer Synapse installed or running for any of it — it keeps working with Synapse closed, uninstalled, or never set up. (If you *do* use Synapse, just avoid remapping the same keys there to prevent a conflict.)
 
 ---
 
@@ -75,9 +96,10 @@ Save this as `install.sh`:
 # install.sh — Razer Keyboard macOS Setup (F-keys + Control→Command)
 # Fully automated: no manual Karabiner UI steps required.
 #
-# Scopes ALL remapping to the Razer keyboard via Vendor ID 0x1532 (5426),
-# so it works identically over 2.4GHz dongle, Bluetooth, and USB-C wired —
-# and never touches the built-in MacBook keyboard or other devices.
+# Works with ANY Razer keyboard: scopes ALL remapping to Razer's Vendor ID
+# 0x1532 (5426) — shared by every Razer device — so it applies regardless of
+# model and works identically over 2.4GHz dongle, Bluetooth, and USB-C wired,
+# while never touching the built-in MacBook keyboard or other devices.
 #
 # Tested on macOS 13 Ventura and later.
 # Usage: bash install.sh
